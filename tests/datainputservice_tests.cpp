@@ -141,3 +141,24 @@ TEST_CASE("Testing email in datainputservice", "[auth][email]") {
         REQUIRE(DataInputService::emailValid(email) == false);
     }
 }
+
+TEST_CASE("Testing name in datainputservice", "[auth][name]") {
+    SECTION("EmptyNameExpectedFalse") {
+        string name = "";
+        REQUIRE(DataInputService::nameValid(name) == false);
+    }
+
+    SECTION("NameMoreThanMaxValidNameLengthExpectedFalse") {
+        const int maxValidNameLength = DISC::kMaxLenOfName;
+        string name = string(maxValidNameLength + 1, 'a');
+
+        REQUIRE(DataInputService::nameValid(name) == false);
+    }
+
+    SECTION("NameLessThanMinValidNameLengthExpectedFalse") {
+        const int minValidNameLength = DISC::kMinLenOfName;
+        string name = string(minValidNameLength - 1, 'a');
+
+        REQUIRE(DataInputService::nameValid(name) == false);
+    }
+}
