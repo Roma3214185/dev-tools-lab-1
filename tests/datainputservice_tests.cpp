@@ -91,3 +91,53 @@ TEST_CASE("Testing tag in datainputservice", "[auth][tag]") {
         REQUIRE(DataInputService::tagValid(tag) == false);
     }
 }
+
+TEST_CASE("Testing email in datainputservice", "[auth][email]") {
+    SECTION("EmailWithoutDomeinExpectedFalse") {
+        string email = "123456789";
+        REQUIRE(DataInputService::emailValid(email) == false);
+    }
+
+    SECTION("ValidEmailExpectedTrue") {
+        string email = "roma@gmail.com";
+        REQUIRE(DataInputService::emailValid(email) == true);
+    }
+
+    SECTION("EmailWithOnlyDomeinExpectedFalse") {
+        string email = "@gmail.com";
+        REQUIRE(DataInputService::emailValid(email) == false);
+    }
+
+    SECTION("EmailWithInvalidCharacterExpectedFalse") {
+        string email = "roma*@gmail.com";
+        REQUIRE(DataInputService::emailValid(email) == false);
+    }
+
+    SECTION("EmailWithInvalidDomeinExpectedFalse") {
+        string email = "roma*@gmailcom";
+        REQUIRE(DataInputService::emailValid(email) == false);
+    }
+
+    SECTION("EmailIsLessThanMinValidLenExpectedFalse"){
+        const int minValidEmailLen = DISC::kMinEmailLocalPartLength;
+        string email = string(minValidEmailLen - 1, 'a') + DISC::kEmailDomain;
+
+        REQUIRE(DataInputService::emailValid(email) == false);
+    }
+
+    SECTION("EmailIsMoreThanMaxValidLenExpectedFalse") {
+        const int maxValidEmailLen = DISC::kMaxEmailLocalPartLength;
+        string email = string(maxValidEmailLen + 1, 'a') + DISC::kEmailDomain;
+
+        REQUIRE(DataInputService::emailValid(email) == false);
+    }
+
+    SECTION("EmailWithEmptyCharaverExpectedFalse") {
+        string email = "rom a@gmailcom";
+        REQUIRE(DataInputService::emailValid(email) == false);
+    }
+    SECTION("EmailWithEmptyCharaverInfrontExpectedFalse") {
+        string email = "     roma@gmailcom";
+        REQUIRE(DataInputService::emailValid(email) == false);
+    }
+}
