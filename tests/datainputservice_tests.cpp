@@ -62,3 +62,32 @@ TEST_CASE("Testing password checking in datainputservice", "[auth][password]") {
                 == false);
     }
 }
+
+TEST_CASE("Testing tag in datainputservice", "[auth][tag]") {
+
+    SECTION("TagEmptyExpectedFalse") {
+        string tag = "";
+        REQUIRE(DataInputService::tagValid(tag) == false);
+    }
+
+    SECTION("TagLessThanMinValidTagLenExpectedFalse") {
+        const int minValidTagLen = DISC::kMinTagLength;
+        string tag = string(minValidTagLen - 1, 'a');
+        REQUIRE(DataInputService::tagValid(tag) == false);
+    }
+
+    SECTION("TagStartsWithUnderlineExpectedFalse") {
+        string tag = "_r4241";
+        REQUIRE(DataInputService::tagValid(tag) == false);
+    }
+
+    SECTION("TagWithTwoUnderlineInARowExpectedFalse") {
+        string tag = "r__r14";
+        REQUIRE(DataInputService::tagValid(tag) == false);
+    }
+
+    SECTION("TagWithDotExpectedFalse") {
+        string tag = "r.r13";
+        REQUIRE(DataInputService::tagValid(tag) == false);
+    }
+}
