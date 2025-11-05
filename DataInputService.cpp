@@ -90,44 +90,47 @@ namespace DataInputService {
         return {true,  "Email is valid"};
     }
 
+    ValidationResult passwordValidDetailed(const string& password, const Config& cfg) {
+        if (password.empty()) return {false,  "Password is empty"};
+        if (password.size() < cfg.kMinPasswordLength) return {false,  "Password is too short"};
+        if (password.size() > cfg.kMaxPasswordLength) return {false,  "Password is too long"};
 
 
-
-
-
-    bool passwordValidLength(const string &password) {
-        return password.size() >= kMinPasswordLength && password.size() <= kMaxPasswordLength;
+        const string allowedSymbols = "!$_+@#%&*-";
+        for (size_t i = 0; i < password.size(); ++i) {
+            unsigned char c = static_cast<unsigned char>(password[i]);
+            if (c >= 0x80) continue;
+            if (isControlOrSpace(static_cast<char>(c))) return {false, "Password contains space or control character"};
+            if (std::isalnum(c)) continue;
+            if (allowedSymbols.find(password[i]) != string::npos) continue;
+            return {false,  "Password contains invalid character"};
+        }
+        return {true, "Password is valid"};
     }
 
-    bool passwordValidCharacters(const string &password) {
-        return std::all_of(password.begin(), password.end(), [](char ch) {
-            return isLetterOrNumber(ch) || isAllowedSymbol(ch);
-        });
-    }
+    ValidationResult tagValidDetailed(const string& tag, const Config& cfg) {
+        if (tag.empty()) return {false,  "Tag is empty"};
+        if (tag.size() < cfg.kMinTagLength) return {false, "Tag too short"};
+        if (tag.size() > cfg.kMaxTagLength) return {false,  "Tag too long"};
 
-    bool passwordValid(const string &password) {
-        return passwordValidLength(password) && passwordValidCharacters(password);
-    }
+        unsigned char first = static_cast<unsigned char>(tag.front());
+        if (first < 0x80 && !std::isalnum(first)) return {false,  "First character must be letter or number"};
 
-    bool tagValidCharacters(const string &tag) {
-        if (!firstElementIsLetterOrNumber(tag)) return false;
-
-        char prevChar = '\n';
-        return std::all_of(tag.begin(), tag.end(), [&prevChar](char ch) {
-            if (isLetterOrNumber(ch)) {
-                prevChar = ch;
-                return true;
+        bool prevWasUnderscore = false;
+        for (size_t i = 0; i < tag.size(); ++i) {
+            unsigned char c = static_cast<unsigned char>(tag[i]);
+            if (c >= 0x80) { prevWasUnderscore = false; continue; }
+            if (std::isalnum(c)) { prevWasUnderscore = false; continue; }
+            if (c == '_') {
+                if (prevWasUnderscore) return {false,  "Tag contains consecutive underscores"};
+                prevWasUnderscore = true;
+                continue;
             }
-            if (ch == '_' && !hasConsecutiveUnderscores(ch, prevChar)) {
-                prevChar = ch;
-                return true;
-            }
-            return false;
-        });
+
+            if (c == '-' || c == '.') { prevWasUnderscore = false; continue; }
+            return {false,  "Tag contains invalid character"};
+        }
+        return {true, "Tag is valid"};
     }
 
-    bool tagValid(const string &tag) {
-        return tagValidCharacters(tag) && tag.size() >= kMinTagLength && tag.size() <= kMaxTagLength;
-    }
-
-} // namespace DataInputService
+}
