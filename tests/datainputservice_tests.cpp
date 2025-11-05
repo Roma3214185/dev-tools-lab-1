@@ -73,3 +73,54 @@ TEST_CASE("Tag validation - mixed patterns and edge cases", "[tag]") {
     }
 }
 
+TEST_CASE("Email validation - aliases, subdomains, IP literals, quoted local", "[email]") {
+    Config cfg;
+    cfg.kMinEmailLocalPartLength = 1;
+    cfg.kMaxEmailLocalPartLength = 64;
+
+    SECTION("Simple valid email") {
+        auto r = emailValidDetailed("user@example.com", cfg);
+        REQUIRE(r.valid == true);
+    }
+
+    SECTION("Email with plus alias") {
+        auto r = emailValidDetailed("user+alias@sub.domain.com", cfg);
+        REQUIRE(r.valid == true);
+    }
+
+    SECTION("Email with IP literal") {
+        auto r = emailValidDetailed("user@[192.168.1.1]", cfg);
+        REQUIRE(r.valid == true);
+    }
+
+    SECTION("Quoted local part") {
+        auto r = emailValidDetailed("\"john..doe\"@example.com", cfg);
+        REQUIRE(r.valid == true);
+    }
+
+    SECTION("Local part too long") {
+        string local(cfg.kMaxEmailLocalPartLength + 1, 'a');
+        auto r = emailValidDetailed(local + "@example.com", cfg);
+        REQUIRE(!r.valid);
+        REQUIRE(r.message == "local_too_long");
+    }
+
+    SECTION("Missing at") {
+        auto r = emailValidDetailed("notanemail", cfg);
+        REQUIRE(!r.valid);
+        REQUIRE(r.message == "no_at");
+    }
+}
+
+TEST_CASE("Chained validation - form level", "[form]") {
+    Config cfg;
+    UserInput good{"John Doe", "john+dev@example.com", "GoodP@ss1", "dev_tag"};
+    auto r = validateUserInput(good, cfg);
+    REQUIRE(r.valid == true);
+
+    UserInput badName{"", "john+dev@example.com", "GoodP@ss1", "dev_tag"};
+    auto r2 = validateUserInput(badName, cfg);
+    REQUIRE(r2.valid == false);
+    REQUIRE(r2.message == "empty");
+}
+
