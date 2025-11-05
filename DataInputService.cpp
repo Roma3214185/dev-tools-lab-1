@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <cctype>
 #include <regex>
+#include <cctype>
+#include <locale>
+
 
 using namespace std;
 
@@ -16,18 +19,32 @@ namespace DataInputService {
         return std::isspace(uch) || std::iscntrl(uch);
     }
 
-    ValidationResult nameValidDetailed(const string& name, const Config& cfg) {
-        if (name.empty()) return {false,  "Name is empty"};
-        if (name.size() < cfg.kMinLenOfName) return {false,  "Name is shorter than minimum"};
-        if (name.size() > cfg.kMaxLenOfName) return {false,  "Name is longer than maximum"};
-
-        for (unsigned char uch : name) {
-            if (uch >= 0x80) continue;
-            if (isControlOrSpace(static_cast<char>(uch)) && uch != ' ') return {false, "Name contains control characters"};
-            if (std::ispunct(uch) && uch != '\'' && uch != '-' && uch != ' ') return {false,  "Name contains invalid punctuation"};
+    size_t utf8Length(const std::string &str) {
+        size_t len = 0;
+        for (unsigned char c : str) {
+            if ((c & 0xC0) != 0x80) ++len;
         }
-        return {true,  "Name is valid"};
+        return len;
     }
+
+    ValidationResult nameValidDetailed(const std::string &name, const Config &cfg) {
+        if (name.empty()) return {false, "Name is empty"};
+
+        size_t len = utf8Length(name);
+        if (len < cfg.kMinLenOfName) return {false, "Name too short"};
+        if (len > cfg.kMaxLenOfName) return {false, "Name too long"};
+
+        for (unsigned char c : name) {
+            if (c < 128) {
+                if (!std::isalnum(c) && c != ' ' && c != '-' && c != '\'') {
+                    return {false, "Name contains invalid character"};
+                }
+            }
+        }
+
+        return {true, ""};
+    }
+
 
     ValidationResult emailValidDetailed(const string& email, const Config& cfg) {
         if (email.empty()) return {false,  "Email is empty"};
