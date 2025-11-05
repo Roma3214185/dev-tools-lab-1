@@ -133,4 +133,16 @@ namespace DataInputService {
         return {true, "Tag is valid"};
     }
 
+    ValidationResult validateUserInput(const UserInput& input, const Config& cfg) {
+        auto r = nameValidDetailed(input.name, cfg);
+        if (!r.valid) return r;
+        r = emailValidDetailed(input.email, cfg);
+        if (!r.valid) return r;
+        r = passwordValidDetailed(input.password, cfg);
+        if (!r.valid) return r;
+        r = tagValidDetailed(input.tag, cfg);
+        if (!r.valid) return r;
+        return {true,  "All fields valid"};
+    }
+
 }

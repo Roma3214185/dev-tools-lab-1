@@ -36,11 +36,6 @@ namespace DataInputService {
     ValidationResult passwordValidDetailed(const std::string& password, const Config& cfg = Config());
     ValidationResult tagValidDetailed(const std::string& tag, const Config& cfg = Config());
 
-    bool nameValid(const std::string& name, const Config& cfg = Config());
-    bool emailValid(const std::string& login, const Config& cfg = Config());
-    bool passwordValid(const std::string& password, const Config& cfg = Config());
-    bool tagValid(const std::string& tag, const Config& cfg = Config());
-
     ValidationResult validateUserInput(const UserInput& input, const Config& cfg = Config());
 
 } // namespace DataInputService

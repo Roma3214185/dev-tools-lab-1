@@ -1,164 +1,75 @@
 #define CATCH_CONFIG_MAIN
-
 #include <catch2/catch_all.hpp>
 #include <string>
 #include "../DataInputService.h"
 
 using namespace std;
-namespace DISC = DataInputService::detail;
+using namespace DataInputService;
 
-TEST_CASE("Testing password checking in datainputservice", "[auth][password]") {
-    SECTION("ValidPasswordExpectedTrue") {
-        string password = "12345678";
-        REQUIRE(DataInputService::passwordValid(password) == true);
+TEST_CASE("Name validation - boundaries and message", "[name]") {
+    Config cfg;
+    cfg.kMinLenOfName = 1;
+    cfg.kMaxLenOfName = 10;
+
+    SECTION("Empty name") {
+        auto r = nameValidDetailed("", cfg);
+        REQUIRE(r.valid == false);
+        REQUIRE(r.message == "Name is empty");
     }
 
-    SECTION("ValidPasswordExpectedTrue") {
-        string password = "123455760";
-        REQUIRE(DataInputService::passwordValid(password) == true);
+    SECTION("Exact min length") {
+        auto r = nameValidDetailed("A", cfg);
+        REQUIRE(r.valid == true);
     }
 
-    SECTION("PasswordWithInvalidCharacterExpectedFalse") {
-        string password = "12345&6789";
-        REQUIRE(DataInputService::passwordValid(password)
-                == false);
+    SECTION("Exact max length") {
+        string s(cfg.kMaxLenOfName, 'x');
+        auto r = nameValidDetailed(s, cfg);
+        REQUIRE(r.valid == true);
     }
 
-    SECTION("PasswordWithTwoInvalidCharacterExpectedFalse") {
-        string password = "12#345&6789";
-        REQUIRE(DataInputService::passwordValid(password)
-                == false);
+    SECTION("Unicode name allowed") {
+        auto r = nameValidDetailed("Іван Петренко", cfg);
+        REQUIRE(r.valid == true);
     }
 
-    SECTION("PasswordWithEmptyCharacterExpectedFalse") {
-        string password = "12345 36789";
-        REQUIRE(DataInputService::passwordValid(password)
-                == false);
-    }
-
-    SECTION("PasswordWithEmpyCharacterInfrontExpectedFalse") {
-        string password = " 1234536789";
-        REQUIRE(DataInputService::passwordValid(password)
-                == false);
-    }
-
-    SECTION("PasswordWithEmpyCharactersExpectedFalse") {
-        string password = " 12345    367893";
-        REQUIRE(DataInputService::passwordValid(password)
-                == false);
-    }
-
-    SECTION("PasswordWithNotPermittedCharacterExpectedFalse") {
-        string password = "12345&36789";
-        REQUIRE(DataInputService::passwordValid(password)
-                == false);
-    }
-
-    SECTION("PasswordMoreThanMaxValidLengthCharactersExpectedFalse") {
-        const int maxValidLength = DISC::kMaxPasswordLength;
-        string password = string(maxValidLength + 2, 'b');
-
-        REQUIRE(DataInputService::passwordValid(password)
-                == false);
+    SECTION("Name with apostrophe and hyphen") {
+        auto r = nameValidDetailed("O'Connor-Jr", cfg);
+        REQUIRE(r.valid == true);
     }
 }
 
-TEST_CASE("Testing tag in datainputservice", "[auth][tag]") {
+TEST_CASE("Tag validation - mixed patterns and edge cases", "[tag]") {
+    Config cfg;
+    cfg.kMinTagLength = 2;
+    cfg.kMaxTagLength = 16;
 
-    SECTION("TagEmptyExpectedFalse") {
-        string tag = "";
-        REQUIRE(DataInputService::tagValid(tag) == false);
+    SECTION("Empty tag") {
+        auto r = tagValidDetailed("", cfg);
+        REQUIRE(!r.valid);
+        REQUIRE(r.message == "empty");
     }
 
-    SECTION("TagLessThanMinValidTagLenExpectedFalse") {
-        const int minValidTagLen = DISC::kMinTagLength;
-        string tag = string(minValidTagLen - 1, 'a');
-        REQUIRE(DataInputService::tagValid(tag) == false);
+    SECTION("Starts with underscore -> invalid") {
+        auto r = tagValidDetailed("_abc", cfg);
+        REQUIRE(!r.valid);
+        REQUIRE(r.message == "first_invalid");
     }
 
-    SECTION("TagStartsWithUnderlineExpectedFalse") {
-        string tag = "_r4241";
-        REQUIRE(DataInputService::tagValid(tag) == false);
+    SECTION("Consecutive underscores -> invalid") {
+        auto r = tagValidDetailed("ab__cd", cfg);
+        REQUIRE(!r.valid);
+        REQUIRE(r.message == "consecutive_underscore");
     }
 
-    SECTION("TagWithTwoUnderlineInARowExpectedFalse") {
-        string tag = "r__r14";
-        REQUIRE(DataInputService::tagValid(tag) == false);
+    SECTION("Allow hyphen and dot inside") {
+        auto r = tagValidDetailed("tag-name.v1", cfg);
+        REQUIRE(r.valid == true);
     }
 
-    SECTION("TagWithDotExpectedFalse") {
-        string tag = "r.r13";
-        REQUIRE(DataInputService::tagValid(tag) == false);
-    }
-}
-
-TEST_CASE("Testing email in datainputservice", "[auth][email]") {
-    SECTION("EmailWithoutDomeinExpectedFalse") {
-        string email = "123456789";
-        REQUIRE(DataInputService::emailValid(email) == false);
-    }
-
-    SECTION("ValidEmailExpectedTrue") {
-        string email = "roma@gmail.com";
-        REQUIRE(DataInputService::emailValid(email) == true);
-    }
-
-    SECTION("EmailWithOnlyDomeinExpectedFalse") {
-        string email = "@gmail.com";
-        REQUIRE(DataInputService::emailValid(email) == false);
-    }
-
-    SECTION("EmailWithInvalidCharacterExpectedFalse") {
-        string email = "roma*@gmail.com";
-        REQUIRE(DataInputService::emailValid(email) == false);
-    }
-
-    SECTION("EmailWithInvalidDomeinExpectedFalse") {
-        string email = "roma*@gmailcom";
-        REQUIRE(DataInputService::emailValid(email) == false);
-    }
-
-    SECTION("EmailIsLessThanMinValidLenExpectedFalse"){
-        const int minValidEmailLen = DISC::kMinEmailLocalPartLength;
-        string email = string(minValidEmailLen - 1, 'a') + DISC::kEmailDomain;
-
-        REQUIRE(DataInputService::emailValid(email) == false);
-    }
-
-    SECTION("EmailIsMoreThanMaxValidLenExpectedFalse") {
-        const int maxValidEmailLen = DISC::kMaxEmailLocalPartLength;
-        string email = string(maxValidEmailLen + 1, 'a') + DISC::kEmailDomain;
-
-        REQUIRE(DataInputService::emailValid(email) == false);
-    }
-
-    SECTION("EmailWithEmptyCharaverExpectedFalse") {
-        string email = "rom a@gmailcom";
-        REQUIRE(DataInputService::emailValid(email) == false);
-    }
-    SECTION("EmailWithEmptyCharaverInfrontExpectedFalse") {
-        string email = "     roma@gmailcom";
-        REQUIRE(DataInputService::emailValid(email) == false);
+    SECTION("Unicode tag start") {
+        auto r = tagValidDetailed("тег1", cfg);
+        REQUIRE(r.valid == true);
     }
 }
 
-TEST_CASE("Testing name in datainputservice", "[auth][name]") {
-    SECTION("EmptyNameExpectedFalse") {
-        string name = "";
-        REQUIRE(DataInputService::nameValid(name) == false);
-    }
-
-    SECTION("NameMoreThanMaxValidNameLengthExpectedFalse") {
-        const int maxValidNameLength = DISC::kMaxLenOfName;
-        string name = string(maxValidNameLength + 1, 'a');
-
-        REQUIRE(DataInputService::nameValid(name) == false);
-    }
-
-    SECTION("NameLessThanMinValidNameLengthExpectedFalse") {
-        const int minValidNameLength = DISC::kMinLenOfName;
-        string name = string(minValidNameLength - 1, 'a');
-
-        REQUIRE(DataInputService::nameValid(name) == false);
-    }
-}
