@@ -3,29 +3,40 @@
 
 #include <string>
 
+struct ValidationResult {
+    bool valid;
+    std::string message;
+};
+
+struct Config {
+    size_t kMinLenOfName = 1;
+    size_t kMaxLenOfName = 64;
+
+    size_t kMinPasswordLength = 8;
+    size_t kMaxPasswordLength = 64;
+
+    size_t kMinTagLength = 2;
+    size_t kMaxTagLength = 32;
+
+    size_t kMinEmailLocalPartLength = 1;
+    size_t kMaxEmailLocalPartLength = 64;
+    std::string kEmailDomain = "@gmail.com";
+};
+
+struct UserInput {
+    std::string name;
+    std::string email;
+    std::string password;
+    std::string tag;
+};
+
 namespace DataInputService {
-    namespace detail {
-        inline constexpr int kMinPasswordLength = 8;
-        inline constexpr int kMaxPasswordLength = 22;
-        inline constexpr int kMinTagLength = 4;
-        inline constexpr int kMaxTagLength = 11;
-        inline constexpr int kMinLenOfName = 4;
-        inline constexpr int kMaxLenOfName = 20;
-        inline constexpr int kMinEmailLocalPartLength = 4;
-        inline constexpr int kMaxEmailLocalPartLength = 26;
-        inline const std::string kEmailDomain = "@gmail.com";
-    }
+    ValidationResult nameValidDetailed(const std::string& name, const Config& cfg = Config());
+    ValidationResult emailValidDetailed(const std::string& email, const Config& cfg = Config());
+    ValidationResult passwordValidDetailed(const std::string& password, const Config& cfg = Config());
+    ValidationResult tagValidDetailed(const std::string& tag, const Config& cfg = Config());
 
-    bool emailValid(const std::string& login);
-
-    bool passwordValid(const std::string& password);
-    bool passwordValidLength(const std::string& password);
-    bool passwordValidCharacters(const std::string& password);
-
-    bool tagValid(const std::string& tag);
-    bool tagValidCharacters(const std::string& tag);
-
-    bool nameValid(const std::string& name);
+    ValidationResult validateUserInput(const UserInput& input, const Config& cfg = Config());
 
 } // namespace DataInputService
 
