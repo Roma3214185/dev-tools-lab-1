@@ -37,11 +37,17 @@ struct Config {
     std::string kEmailDomain = "@gmail.com"; ///< Required email domain.
 };
 
+/**
+ * @brief Represents user-provided input fields.
+ *
+ * The validation service checks all the fields in this structure
+ * using the rules defined in Config.
+ */
 struct UserInput {
-    std::string name;
-    std::string email;
-    std::string password;
-    std::string tag;
+    std::string name;       ///< The user's name.
+    std::string email;      ///< The user's email address.
+    std::string password;   ///< The user's password.
+    std::string tag;        ///< The user's tag/identifier.
 };
 
 namespace DataInputService {
