@@ -15,19 +15,26 @@ struct ValidationResult {
     std::string message; ///< Detailed description of the validation error (empty if valid).
 };
 
+/**
+ * @brief Configuration parameters used for validating user input.
+ *
+ * This structure defines all bounds and constraints used by
+ * the validation functions. It can be customized to adjust
+ * input requirements without changing validation logic.
+ */
 struct Config {
-    size_t kMinLenOfName = 1;
-    size_t kMaxLenOfName = 64;
+    size_t kMinLenOfName = 1;     ///< Minimum allowed length of a user name.
+    size_t kMaxLenOfName = 64;    ///< Maximum allowed length of a user name.
 
-    size_t kMinPasswordLength = 8;
-    size_t kMaxPasswordLength = 64;
+    size_t kMinPasswordLength = 8;   ///< Minimum allowed password length.
+    size_t kMaxPasswordLength = 64;  ///< Maximum allowed password length.
 
-    size_t kMinTagLength = 2;
-    size_t kMaxTagLength = 32;
+    size_t kMinTagLength = 2;     ///< Minimum allowed tag length.
+    size_t kMaxTagLength = 32;    ///< Maximum allowed tag length.
 
-    size_t kMinEmailLocalPartLength = 1;
-    size_t kMaxEmailLocalPartLength = 64;
-    std::string kEmailDomain = "@gmail.com";
+    size_t kMinEmailLocalPartLength = 1;  ///< Minimum length of the email's local part (before domain).
+    size_t kMaxEmailLocalPartLength = 64; ///< Maximum length of the email's local part (before domain).
+    std::string kEmailDomain = "@gmail.com"; ///< Required email domain.
 };
 
 struct UserInput {
