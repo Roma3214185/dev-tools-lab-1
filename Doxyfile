@@ -1,0 +1,7 @@
+PROJECT_NAME           = "Data input service"
+OUTPUT_DIRECTORY       = docs
+INPUT                  = .
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.cpp
+GENERATE_LATEX         = NO
+GENERATE_HTML          = YES
