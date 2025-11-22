@@ -2,46 +2,38 @@ name: Generate Doxygen Documentation
 
 on:
   push:
-  pull_request:
-    branches: ["main"]
-
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clean problematic Git config
+        run: |
+          git config --global --unset-all http.extraheader || true
+          git config --global --unset-all url.http://sdt.lab.insteadof || true
 
       - name: Install Doxygen and Graphviz
         run: |
-          sudo apt update
-          sudo apt install -y doxygen graphviz
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
 
-      - name: Verify doxygen version
-        run: doxygen --version
-
-      - name: Run Doxygen
+      - name: Generate Doxygen HTML
         run: doxygen Doxyfile
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: html
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/html
