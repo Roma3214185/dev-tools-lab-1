@@ -50,15 +50,87 @@ struct UserInput {
     std::string tag;        ///< The user's tag/identifier.
 };
 
+/**
+ * @namespace DataInputService
+ * @brief Contains a set of functions to validate individual pieces of user input.
+ *
+ * This namespace provides a modular, reusable validation system.
+ * All functions return detailed error messages describing
+ * exact reasons for failed validation (length mismatch, invalid characters, etc.).
+ */
 namespace DataInputService {
+
+    /**
+     * @brief Validates a user's name and returns a detailed explanation if invalid.
+     *
+     * Validation includes:
+     * - Minimum and maximum length checks.
+     * - Potentially additional checks (such as allowed characters),
+     *   depending on implementation.
+     *
+     * @param name The input name string to validate.
+     * @param cfg Validation configuration (length constraints).
+     * @return ValidationResult Detailed result including validity flag and error message.
+     */
     ValidationResult nameValidDetailed(const std::string& name, const Config& cfg = Config());
+
+    /**
+     * @brief Validates an email address and returns a detailed explanation if invalid.
+     *
+     * Validation includes:
+     * - Checking the presence of the required domain (`cfg.kEmailDomain`).
+     * - Ensuring proper length of the local part.
+     * - Ensuring email format rules depending on implementation.
+     *
+     * @param email The email string to validate.
+     * @param cfg Validation configuration (length constraints and domain).
+     * @return ValidationResult Detailed validation result.
+     */
     ValidationResult emailValidDetailed(const std::string& email, const Config& cfg = Config());
+
+    /**
+     * @brief Validates a password according to configuration constraints.
+     *
+     * Validation includes:
+     * - Minimum and maximum length checks.
+     * - Additional security rules depending on implementation.
+     *
+     * @param password The password to validate.
+     * @param cfg Validation configuration (password length constraints).
+     * @return ValidationResult Detailed validation result.
+     */
     ValidationResult passwordValidDetailed(const std::string& password, const Config& cfg = Config());
+
+    /**
+     * @brief Validates a user tag and provides a detailed error description.
+     *
+     * Validation includes:
+     * - Length checks.
+     * - Additional formatting rules depending on implementation.
+     *
+     * @param tag The user tag to validate.
+     * @param cfg Validation configuration (tag length constraints).
+     * @return ValidationResult Detailed validation result.
+     */
     ValidationResult tagValidDetailed(const std::string& tag, const Config& cfg = Config());
 
+    /**
+     * @brief Validates all fields of a UserInput structure.
+     *
+     * Validation runs in the following order:
+     * 1. nameValidDetailed()
+     * 2. emailValidDetailed()
+     * 3. passwordValidDetailed()
+     * 4. tagValidDetailed()
+     *
+     * If a field fails validation, no further fields are checked.
+     *
+     * @param input The structure containing user-supplied name, email, password, and tag.
+     * @param cfg Validation configuration.
+     * @return ValidationResult The first validation error encountered, or success if all fields are valid.
+     */
     ValidationResult validateUserInput(const UserInput& input, const Config& cfg = Config());
 
 } // namespace DataInputService
 
 #endif // DATAINPUTSERVICE_H
-
