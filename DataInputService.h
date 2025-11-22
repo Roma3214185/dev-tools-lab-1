@@ -3,9 +3,16 @@
 
 #include <string>
 
+/**
+ * @brief Represents the result of a validation procedure.
+ *
+ * This structure is used by all validation functions to return
+ * whether the input value is valid and, if not, a human-readable
+ * explanation of the validation error.
+ */
 struct ValidationResult {
-    bool valid;
-    std::string message;
+    bool valid; ///< Indicates whether the validation succeeded.
+    std::string message; ///< Detailed description of the validation error (empty if valid).
 };
 
 struct Config {
